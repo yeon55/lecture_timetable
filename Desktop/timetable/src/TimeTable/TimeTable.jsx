@@ -1,9 +1,10 @@
 import TimeTableRow from "./TimeTableRow";
+import InputModal from "../InputModal/InputModal";
 // import { useRecoilValue } from "recoil";
 // import { timeTableState } from "../store/store";
 import { withStyles } from "@mui/styles";
 // import AddBoxIcon from "@mui/icons-material/AddBox";
-import React from "react";
+import React, { useState } from "react";
 import {
   TableContainer,
   Typography,
@@ -26,6 +27,7 @@ const styles = () => ({
 
 function TimeTable({ classes }) {
   //   const timeTableData = useRecoilValue(timeTableState);
+  const [showModal, setShowModal] = useState(false);
   return (
     <>
       <TableContainer
@@ -44,6 +46,7 @@ function TimeTable({ classes }) {
           variant="contain"
           sx={{ float: "right" }}
           //   endIcon={<AddBoxIcon />}
+          onClick={() => setShowModal(true)}
         >
           강의 입력
         </Button>
@@ -82,6 +85,7 @@ function TimeTable({ classes }) {
           </TableBody>
         </Table>
       </TableContainer>
+      <InputModal showModal={showModal} />
     </>
   );
 }
