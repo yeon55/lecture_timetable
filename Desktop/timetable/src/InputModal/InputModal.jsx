@@ -1,7 +1,8 @@
 import { Controller, useForm } from "react-hook-form";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useRecoilState } from "recoil";
 import { timeTableState } from "../store/store";
+import { v4 as uuidv1 } from "uuid";
 import {
   Dialog,
   DialogActions,
@@ -34,6 +35,17 @@ function InputModal({ showModal, handleClose }) {
   } = useForm();
 
   const [timeTableData, setTimeTableData] = useRecoilState(timeTableState);
+  useEffect(() => {
+    if (showModal) {
+      reset({
+        lectureName: "",
+        day: "mon",
+        startTime: 9,
+        endTime: 10,
+        lectureColor: "#e6c37e",
+      });
+    }
+  }, [showModal, reset]);
   const Submit = useCallback(
     ({ lectureName, day, startTime, endTime, lectureColor }) => {
       let valid = true;
@@ -52,8 +64,22 @@ function InputModal({ showModal, handleClose }) {
         alert("해당 시간에 강의가 이미 존재합니다.");
         return;
       }
+
+      const data = {
+        start: startTime,
+        end: endTime,
+        name: lectureName,
+        color: lectureColor,
+        id: uuidv1(),
+      };
+      setTimeTableData((oldTimeData) => ({
+        ...oldTimeData,
+        [day]: [...oldTimeData[day], data],
+      }));
+
+      handleClose();
     },
-    [timeTableData]
+    [timeTableData, setTimeTableData, handleClose]
   );
 
   return (
