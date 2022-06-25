@@ -1,5 +1,7 @@
 import { Controller, useForm } from "react-hook-form";
-import React from "react";
+import React, { useCallback } from "react";
+import { useRecoilState } from "recoil";
+import { timeTableState } from "../store/store";
 import {
   Dialog,
   DialogActions,
@@ -15,10 +17,13 @@ import {
   Stack,
   MenuItem,
 } from "@mui/material";
+
 const timeOptions = new Array(12)
   .fill(null)
   .map((e, i) => ({ value: i + 9, label: i + 9 }));
 
+const checkOverLap = (A, B) =>
+  B.start < A.start ? B.end > A.start : B.start < A.end;
 function InputModal({ showModal, handleClose }) {
   const {
     formState: { errors },
@@ -28,9 +33,32 @@ function InputModal({ showModal, handleClose }) {
     reset,
   } = useForm();
 
+  const [timeTableData, setTimeTableData] = useRecoilState(timeTableState);
+  const Submit = useCallback(
+    ({ lectureName, day, startTime, endTime, lectureColor }) => {
+      let valid = true;
+      for (let index = 0; index < timeTableData[day].length; index++) {
+        if (
+          checkOverLap(timeTableData[day][index], {
+            start: startTime,
+            end: endTime,
+          })
+        ) {
+          valid = false;
+          break;
+        }
+      }
+      if (!valid) {
+        alert("해당 시간에 강의가 이미 존재합니다.");
+        return;
+      }
+    },
+    [timeTableData]
+  );
+
   return (
     <Dialog open={showModal} onClose={handleClose}>
-      <form onSubmit={handleSubmit()}>
+      <form onSubmit={handleSubmit(Submit)}>
         <DialogTitle>강의정보 입력</DialogTitle>
         <DialogContent style={{ width: "400px" }}>
           <Controller
@@ -42,6 +70,7 @@ function InputModal({ showModal, handleClose }) {
                 {...field}
                 error={!!errors.lectureName}
                 style={{ marginTop: "30px", width: "350px" }}
+                autoComplete="off"
                 label="강의명"
               />
             )}
@@ -146,9 +175,19 @@ function InputModal({ showModal, handleClose }) {
               </p>
             )}
           </Stack>
+          <div style={{ marginTop: "30px" }}>
+            <label htmlFor="lectureColor">시간표 색상:</label>
+            <Controller
+              control={control}
+              name="lectureColor"
+              render={({ field }) => (
+                <input {...field} style={{ maeginLeft: "30px" }} type="color" />
+              )}
+            />
+          </div>
         </DialogContent>
         <DialogActions>
-          <Button>취소</Button>
+          <Button onclick={handleClose}>취소</Button>
           <Button type="submit">입력</Button>
         </DialogActions>
       </form>
