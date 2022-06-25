@@ -4,7 +4,7 @@ import InputModal from "../InputModal/InputModal";
 // import { timeTableState } from "../store/store";
 import { withStyles } from "@mui/styles";
 // import AddBoxIcon from "@mui/icons-material/AddBox";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   TableContainer,
   Typography,
@@ -28,6 +28,10 @@ const styles = () => ({
 function TimeTable({ classes }) {
   //   const timeTableData = useRecoilValue(timeTableState);
   const [showModal, setShowModal] = useState(false);
+  const handleClose = useCallback(() => {
+    setShowModal(false);
+  }, []);
+
   return (
     <>
       <TableContainer
@@ -85,7 +89,7 @@ function TimeTable({ classes }) {
           </TableBody>
         </Table>
       </TableContainer>
-      <InputModal showModal={showModal} />
+      <InputModal showModal={showModal} handleClose={handleClose} />
     </>
   );
 }
