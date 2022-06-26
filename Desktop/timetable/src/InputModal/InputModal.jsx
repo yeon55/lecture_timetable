@@ -25,7 +25,16 @@ const timeOptions = new Array(12)
 
 const checkOverLap = (A, B) =>
   B.start < A.start ? B.end > A.start : B.start < A.end;
-function InputModal({ showModal, handleClose }) {
+function InputModal({
+  showModal,
+  handleClose,
+  dayData = "mon",
+  startTimeData = 9,
+  endTimeData = 10,
+  lectureNameData = "",
+  colorData = "#e6c37e",
+  idNum,
+}) {
   const {
     formState: { errors },
     control,
@@ -39,13 +48,22 @@ function InputModal({ showModal, handleClose }) {
     if (showModal) {
       reset({
         lectureName: "",
-        day: "mon",
-        startTime: 9,
-        endTime: 10,
-        lectureColor: "#e6c37e",
+        day: dayData,
+        startTime: startTimeData,
+        endTime: endTimeData,
+        lectureColor: colorData,
       });
     }
-  }, [showModal, reset]);
+  }, [
+    showModal,
+    reset,
+    dayData,
+    startTimeData,
+    endTimeData,
+    lectureNameData,
+    colorData,
+  ]);
+
   const Submit = useCallback(
     ({ lectureName, day, startTime, endTime, lectureColor }) => {
       let valid = true;
@@ -81,10 +99,54 @@ function InputModal({ showModal, handleClose }) {
     },
     [timeTableData, setTimeTableData, handleClose]
   );
+  const Edit = useCallback(
+    ({ lectureName, day, startTime, endTime, lectureColor }) => {
+      let valid = true;
 
+      for (let index = 0; index < timeTableData[day].length; index++) {
+        if (
+          checkOverLap(timeTableData[day][index], {
+            start: startTime,
+            end: endTime,
+          }) &&
+          timeTableData[day][index]["id"] !== idNum
+        ) {
+          valid = false;
+          break;
+        }
+      }
+      if (!valid) {
+        alert("해당 시간에 강의가 이미 존재합니다.");
+        return;
+      }
+
+      const filteredDayData = [
+        ...timeTableData[dayData].filter((data) => data.id !== idNum),
+      ];
+      const newTimeTableData = { ...timeTableData[dayData].filteredDayData };
+      const newDayData = [
+        ...newTimeTableData[day],
+        {
+          start: startTime,
+          end: endTime,
+          id: idNum,
+          name: lectureName,
+          color: lectureColor,
+        },
+      ];
+
+      setTimeTableData({
+        ...newTimeTableData,
+        [day]: newDayData,
+      });
+
+      handleClose();
+    },
+    [dayData, idNum, handleClose, setTimeTableData, timeTableData]
+  );
   return (
     <Dialog open={showModal} onClose={handleClose}>
-      <form onSubmit={handleSubmit(Submit)}>
+      <form onSubmit={handleSubmit(idNum ? Edit : Submit)}>
         <DialogTitle>강의정보 입력</DialogTitle>
         <DialogContent style={{ width: "400px" }}>
           <Controller
